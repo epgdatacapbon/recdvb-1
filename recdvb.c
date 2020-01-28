@@ -69,7 +69,7 @@ static const char options_desc[] =
 "  -b, --b25:               Decrypt using BCAS card\n"
 "    -r, --round N:         Specify round number\n"
 "    -s, --strip:           Strip null stream\n"
-"    -m, --EMM:             Instruct EMM operation\n"
+"    -m, --emm:             Instruct EMM operation\n"
 #endif
 "\n"
 "ISDB-S options:\n"
@@ -80,7 +80,7 @@ static void show_usage(char *cmd)
 {
 	fprintf(stderr, "Usage: \n%s "
 #ifdef HAVE_LIBARIB25
-		"[--b25 [--round N] [--strip] [--EMM]] "
+		"[--b25 [--round N] [--strip] [--emm]] "
 #endif
 		"[--dev devicenumber] "
 		"[--lnb voltage] "
@@ -88,7 +88,7 @@ static void show_usage(char *cmd)
 		"channel rectime destfile\n", cmd);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Remarks:\n");
-	fprintf(stderr, "if channel begins with 'bs##' or 'nd##', "
+	fprintf(stderr, "if channel begins with 'bs##' or 'cs##', "
 			"means BS/CS channel, '##' is numeric.\n");
 	fprintf(stderr, "if rectime  is '-', records indefinitely.\n");
 	fprintf(stderr, "if destfile is '-', stdout is used for output.\n");

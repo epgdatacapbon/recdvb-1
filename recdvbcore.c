@@ -96,10 +96,10 @@ static int set_isdb_s_frequency(const char *channel, struct dtv_property *prop)
 			return 1;
 		}
 		prop->u.data = fe_freq * 19180 + 1030300;
-	} else if (((channel[0] == 'n')||(channel[0] == 'N')) &&
-		   ((channel[1] == 'd')||(channel[1] == 'D'))) {
+	} else if (((channel[0] == 'c')||(channel[0] == 'C')) &&
+	((channel[1] == 's')||(channel[1] == 'S'))) {
 		if ((fe_freq = (uint32_t)atoi(channel + 2)) == 0) {
-			fprintf(stderr, "Error: channel is not NDnn (nn=numeric)\n");
+			fprintf(stderr, "Error: channel is not CSnn (nn=numeric)\n");
 			return 1;
 		}
 		prop->u.data = fe_freq * 20000 + 1573000;
