@@ -19,11 +19,10 @@
 
 #include "preset.h"
 
-#define NUM_PRESET_CH 88
 static const struct {
 	char *channel;
 	unsigned int tsid;
-} preset_ch[NUM_PRESET_CH] = {
+} preset_ch[] = {
 	{ "bs01_0", 0x4010 },
 	{ "bs01_1", 0x4011 },
 	{ "bs01_2", 0x4012 },
@@ -68,13 +67,16 @@ static const struct {
 	{ "nd10", 0x60a0 }, { "nd12", 0x70c0 },
 	{ "nd14", 0x70e0 }, { "nd16", 0x7100 },
 	{ "nd18", 0x7120 }, { "nd20", 0x7140 },
-	{ "nd22", 0x7160 }, { "nd24", 0x7180 }
+	{ "nd22", 0x7160 }, { "nd24", 0x7180 },
+
+	{ "", 0 }
 };
 
 void set_bs_tsid(char *pch, unsigned int *tsid)
 {
 	int i;
 	char channel[8] = {0};
+
 	if (((pch[0] == 'b')|| (pch[0] == 'B')) && ((pch[1] == 's') || (pch[1] == 'S'))) {
 		channel[0] = 'b';
 		channel[1] = 's';
@@ -87,13 +89,12 @@ void set_bs_tsid(char *pch, unsigned int *tsid)
 	}
 	pch[i] = '\0';
 
-	for (i = 0; i < NUM_PRESET_CH; i++)
+	i = 0;
+	while (preset_ch[i].tsid != 0) {
 		if (strcmp(preset_ch[i].channel, channel) == 0) break;
-
-	if (i == NUM_PRESET_CH) {
-		*tsid = 0;
-	} else {
-		*tsid = preset_ch[i].tsid;
+		i++;
 	}
+
+	*tsid = preset_ch[i].tsid;
 }
 
