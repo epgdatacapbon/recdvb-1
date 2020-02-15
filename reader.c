@@ -42,7 +42,6 @@ void *reader_func(void *p)
 	struct recdvb_options *opts = tdata->opts;
 	int wfd = -1;
 #ifdef HAVE_LIBARIB25
-	int code;
 	int use_b25 = 0;
 	decoder *decoder = NULL;
 	decoder_options dopt = {
@@ -63,7 +62,8 @@ void *reader_func(void *p)
 	if (opts->b25) {
 		decoder = b25_startup(&dopt);
 		if (decoder == NULL) {
-			tdata->status = READER_EXIT_EINIT_DECODER;
+			fprintf(stderr, "Error: Cannot start b25 decoder\n");
+			fprintf(stderr, "       Fall back to encrypted recording\n");
 			goto end;
 		}
 		fprintf(stderr, "Info: B25 startup successfully.\n");
@@ -75,19 +75,15 @@ void *reader_func(void *p)
 	if (opts->use_stdout) {
 		wfd = 1; /* stdout */
 	} else {
-		int status;
 		char *path = strdup(opts->destfile);
 		char *dir = dirname(path);
-		status = mkpath(dir, 0777);
-		if (status == -1) {
-			tdata->status = READER_EXIT_EMKPATH;
+		if (mkpath(dir, 0777) == -1) {
 			goto end;
 		}
 		free(path);
 
 		wfd = open(opts->destfile, O_RDWR | O_CREAT | O_TRUNC, 0666);
 		if (wfd < 0) {
-			tdata->status = READER_EXIT_EOPEN_DESTFILE;
 			goto end;
 		}
 	}
@@ -98,7 +94,6 @@ void *reader_func(void *p)
 
 		if (dequeue(p_queue, &qbuf) != 0) {
 			/* no queue timeout */
-			tdata->status = READER_EXIT_TIMEOUT;
 			break;
 		}
 
@@ -114,9 +109,8 @@ void *reader_func(void *p)
 
 #ifdef HAVE_LIBARIB25
 		if (use_b25) {
-			code = b25_decode(decoder, &sbuf, &dbuf);
-			if (code < 0) {
-				fprintf(stderr, "Error: b25_decode failed (code=%d).\n", code);
+			if (b25_decode(decoder, &sbuf, &dbuf) < 0) {
+				fprintf(stderr, "Error: b25_decode failed.\n");
 				fprintf(stderr, "       fall back to encrypted recording.\n");
 				use_b25 = 0;
 			} else {
@@ -166,10 +160,7 @@ end:
 
 #ifdef HAVE_LIBARIB25
 	if (use_b25) {
-		code = b25_finish(decoder, &dbuf);
-		if (code < 0) {
-			tdata->status = READER_EXIT_EB25FINISH;
-		}
+		b25_finish(decoder, &dbuf);
 	}
 #endif
 
@@ -193,14 +184,3 @@ end:
 
 	return NULL;
 }
-
-void reader_show_error(enum reader_exit_status s)
-{
-	switch (s) {
-	case READER_EXIT_EINIT_DECODER:
-		fprintf(stderr, "Error: Cannot start b25 decoder\n");
-		fprintf(stderr, "       Fall back to encrypted recording\n");
-		break;
-	}
-}
-

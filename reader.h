@@ -23,28 +23,16 @@
 #include "recdvb.h"
 #include "queue.h"
 
-/* enum definitions */
-enum reader_exit_status {
-	READER_EXIT_NOERROR,
-	READER_EXIT_EINIT_DECODER,
-	READER_EXIT_EMKPATH,
-	READER_EXIT_EOPEN_DESTFILE,
-	READER_EXIT_TIMEOUT,
-	READER_EXIT_EB25FINISH,
-};
-
 /* type definitions */
 typedef struct thread_data {
 	struct recdvb_options *opts;
 	QUEUE_T *queue;
 	pthread_mutex_t mutex;
-	enum reader_exit_status status;
 	int alive;
 	uint64_t w_byte;
 } thread_data;
 
 void *reader_func(void *p);
-void reader_show_error(enum reader_exit_status s);
 
 #endif
 

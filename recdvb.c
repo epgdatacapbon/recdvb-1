@@ -410,7 +410,6 @@ int main(int argc, char **argv)
 	tdata.opts = &opts;
 	tdata.alive = 1;
 	tdata.queue = p_queue;
-	tdata.status = READER_EXIT_NOERROR;
 	tdata.w_byte = 0;
 	pthread_mutex_init(&tdata.mutex, NULL);
 
