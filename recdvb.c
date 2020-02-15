@@ -323,7 +323,7 @@ int main(int argc, char **argv)
 	int noread_count = 0;
 
 	struct timespec cur_time = {0}, start_time = {0}, read_time = {0};
-	BUFSZ   *bufptr;
+	BUFSZ *bufptr;
 	static struct recdvb_options opts;
 
 	/* for epoll */
@@ -515,15 +515,6 @@ int main(int argc, char **argv)
 					fprintf(stderr, "Error: Tune timeout.\n");
 					break;
 				} else {
-					uint64_t w_byte = 0;
-					/* show stats */
-					frontend_show_stats(fefd);
-					if (pthread_mutex_trylock(&tdata.mutex) == 0) {
-						w_byte = tdata.w_byte;
-						pthread_mutex_unlock(&tdata.mutex);
-					}
-					fprintf(stderr, "      Read %lubyte, Write %lubyte, Overrun %lubyte\n", r_byte, w_byte, o_byte);
-
 					/* check timeout */
 					if (p_r_byte == r_byte) {
 						noread_count++;
@@ -610,13 +601,13 @@ int main(int argc, char **argv)
 	/* show record time info */
 	fprintf(stderr, "Info: Elapsed time %.2lfsec\n", diff_timespec(&cur_time, &start_time) / 1000.0);
 	if (read_time.tv_sec > 0 || read_time.tv_nsec) {
-		/* tuning successful. */
+		/* tuning successful */
 		fprintf(stderr, "      (Tuning %.2lfsec)\n", diff_timespec(&read_time, &start_time) / 1000.0);
 	}
 
 end:
 
-	/* tell exit to thread. */
+	/* tell exit to thread */
 	while (enqueue(p_queue, NULL) != 0) {
 		/* when enqueue timeout, check thread alive */
 		int thread_alive = 1;

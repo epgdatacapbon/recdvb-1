@@ -219,57 +219,6 @@ int frontend_tune(int fefd, char *channel, unsigned int tsid, int lnb)
 	return 0;
 }
 
-void frontend_show_stats(int fefd)
-{
-	struct dtv_property prop[4];
-	struct dtv_properties props;
-	prop[0].cmd = DTV_STAT_CNR;
-	prop[1].cmd = DTV_STAT_ERROR_BLOCK_COUNT;
-	prop[2].cmd = DTV_STAT_TOTAL_BLOCK_COUNT;
-	prop[3].cmd = DTV_STAT_SIGNAL_STRENGTH;
-	props.props = prop;
-	props.num = 4;
-	if (ioctl(fefd, FE_GET_PROPERTY, &props) == 0) {
-
-		fprintf(stderr, "Info:");
-
-		for (int i = 0; i < 4; ++i) {
-			for (int j = 0; j == 0 || j < prop[i].u.st.len; ++j) {
-				switch (i) {
-				case 0:
-					fprintf(stderr, " CNR[%d]=", j);
-					break;
-				case 1:
-					fprintf(stderr, " ErrorBlock[%d]=", j);
-					break;
-				case 2:
-					fprintf(stderr, " TotalBlock[%d]=", j);
-					break;
-				case 3:
-					fprintf(stderr, " Signal[%d]=", j);
-					break;
-				}
-
-				switch (prop[i].u.st.stat[j].scale) {
-				case FE_SCALE_COUNTER:
-					fprintf(stderr, "%llu", prop[i].u.st.stat[j].uvalue);
-					break;
-				case FE_SCALE_RELATIVE:
-					fprintf(stderr, "%lf", (double)prop[i].u.st.stat[j].uvalue / 655.35);
-					break;
-				case FE_SCALE_DECIBEL:
-					fprintf(stderr, "%lf", (double)prop[i].u.st.stat[j].svalue / 1000);
-					break;
-				case FE_SCALE_NOT_AVAILABLE:
-					fprintf(stderr, "N/A");
-					break;
-				}
-			}
-		}
-		fprintf(stderr, "\n");
-	}
-}
-
 int frontend_locked(int fefd)
 {
 	unsigned int status;
