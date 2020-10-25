@@ -50,7 +50,6 @@ void *reader_func(void *p)
 		opts->strip ? 1 : 0,
 		opts->emm ? 1 : 0
 	};
-	ARIB_STD_B25_BUFFER dbuf;
 #endif
 	BUFSZ *qbuf;
 	ARIB_STD_B25_BUFFER sbuf, buf;
@@ -110,19 +109,14 @@ void *reader_func(void *p)
 		sbuf.data = qbuf->buffer;
 		sbuf.size = (int32_t)qbuf->size;
 
-		buf = sbuf; /* default */
-
 #ifdef HAVE_LIBARIB25
 		if (use_b25) {
-			code = b25_decode(decoder, &sbuf, &dbuf);
-			if (code < 0) {
-				fprintf(stderr, "Error: b25_decode failed (code=%d).\n", code);
-				fprintf(stderr, "       fall back to encrypted recording.\n");
-				use_b25 = 0;
-			} else {
-				buf = dbuf;
-			}
+			b25_decode(decoder, &sbuf, &buf);
+		} else {
+			buf = sbuf;
 		}
+#else
+		buf = sbuf;
 #endif
 
 		/* write data to output file */
@@ -166,7 +160,7 @@ end:
 
 #ifdef HAVE_LIBARIB25
 	if (use_b25) {
-		code = b25_finish(decoder, &dbuf);
+		code = b25_finish(decoder, &buf);
 		if (code < 0) {
 			tdata->status = READER_EXIT_EB25FINISH;
 		}

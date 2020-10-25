@@ -16,10 +16,13 @@
  */
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "decoder.h"
 
 #ifdef HAVE_LIBARIB25
+
+uint8_t *_data = NULL;
 
 decoder *b25_startup(decoder_options *opt)
 {
@@ -79,6 +82,10 @@ error:
 
 int b25_shutdown(decoder *dec)
 {
+	if (_data) {
+		free(_data);
+		_data = NULL;
+	}
 	dec->b25->release(dec->b25);
 	dec->bcas->release(dec->bcas);
 	free(dec);
@@ -90,17 +97,43 @@ int b25_decode(decoder *dec, ARIB_STD_B25_BUFFER *sbuf, ARIB_STD_B25_BUFFER *dbu
 {
 	int code;
 
-	code = dec->b25->put(dec->b25, sbuf);
+	if (_data) {
+		free(_data);
+		_data = NULL;
+	}
+
+	ARIB_STD_B25_BUFFER buf;
+	buf.data = sbuf->data;
+	buf.size = sbuf->size;
+
+	code = dec->b25->put(dec->b25, &buf);
 	if (code < 0) {
 		fprintf(stderr, "Error: b25->put failed\n");
+		uint8_t *p = NULL;
+		dec->b25->withdraw(dec->b25, &buf);
+		if (buf.size > 0) {
+			p = (uint8_t *)malloc(buf.size + sbuf->size);
+		}
+		if (p) {
+			memcpy(p, buf.data, buf.size);
+			memcpy(p + buf.size, sbuf->data, sbuf->size);
+			dbuf->data = p;
+			dbuf->size = buf.size + sbuf->size;
+			_data = p;
+		} else {
+			fprintf(stderr, "Error: not enough memory\n");
+			dbuf->data = sbuf->data;
+			dbuf->size = sbuf->size;
+		}
 		return code;
 	}
 
-	code = dec->b25->get(dec->b25, dbuf);
+	code = dec->b25->get(dec->b25, &buf);
 	if (code < 0) {
 		fprintf(stderr, "Error: b25->get failed\n");
-		return code;
 	}
+	dbuf->data = buf.data;
+	dbuf->size = buf.size;
 
 	return code;
 }
